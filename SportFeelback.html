@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>СпортФидбек | Система сбора отзывов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            color: #1e2a3e;
+            line-height: 1.5;
+        }
+
+        /* Шапка и навигация */
+        .navbar {
+            background: #0b2b3b;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #ffb347;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 40px;
+            transition: 0.2s;
+            background: rgba(255,255,255,0.08);
+            font-size: 0.9rem;
+        }
+
+        .nav-links a:hover {
+            background: #ffb347;
+            color: #0b2b3b;
+        }
+
+        /* контейнер страниц */
+        .page {
+            display: none;
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 32px;
+            padding: 2rem 2rem 2.5rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            transition: 0.2s;
+        }
+
+        .active-page {
+            display: block;
+        }
+
+        h1, h2, h3 {
+            color: #0b2b3b;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            border-left: 6px solid #ffb347;
+            padding-left: 1rem;
+        }
+
+        h2 {
+            margin-top: 1.2rem;
+            font-size: 1.6rem;
+        }
+
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .kpi-card {
+            background: #f0f6fa;
+            padding: 1.2rem;
+            border-radius: 28px;
+            flex: 1 1 180px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .kpi-number {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #ff8c42;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 550px;
+            margin-top: 1rem;
+        }
+
+        input, select, textarea {
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 28px;
+            font-size: 1rem;
+            background: white;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #ffb347;
+            box-shadow: 0 0 0 3px rgba(255,180,71,0.2);
+        }
+
+        button, .btn {
+            background: #ffb347;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1e2a3e;
+            width: fit-content;
+        }
+
+        button:hover, .btn:hover {
+            background: #ff9f1a;
+            transform: scale(0.98);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #eef2f5;
+            font-weight: 600;
+        }
+
+        .rating-stars {
+            color: #ffb347;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .message-banner {
+            background: #e6f7e6;
+            color: #2e7d32;
+            padding: 0.8rem 1rem;
+            border-radius: 30px;
+            margin: 1rem 0;
+            display: inline-block;
+        }
+
+        hr {
+            margin: 1.5rem 0;
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, #ffb347, #ffe0b5);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.8rem;
+            color: #4a627a;
+        }
+
+        @media (max-width: 700px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+            .page {
+                padding: 1.2rem;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo">Спорт<span>Фидбек</span></div>
+    <div class="nav-links">
+        <a href="#" data-page="home">Главная</a>
+        <a href="#" data-page="feedback">Оставить отзыв</a>
+        <a href="#" data-page="myreviews">Мои отзывы</a>
+        <a href="#" data-page="dashboard">Дашборд</a>
+        <a href="#" data-page="moderation">Модерация</a>
+        <a href="#" data-page="reports">Отчеты</a>
+        <a href="#" data-page="login">Вход</a>
+    </div>
+</div>
+
+<!-- ГЛАВНАЯ СТРАНИЦА -->
+<div id="home" class="page active-page">
+    <h1>СпортФидбек</h1>
+    <p style="font-size:1.2rem; margin-bottom:1rem;">Автоматизация сбора отзывов для фитнес-клубов и спортцентров</p>
+    <div class="card-grid">
+        <div class="kpi-card">📊 Средний рейтинг<br><span class="kpi-number">4.8 ★</span></div>
+        <div class="kpi-card">🏆 NPS<br><span class="kpi-number">72</span></div>
+        <div class="kpi-card">💬 Отзывов за месяц<br><span class="kpi-number">147</span></div>
+        <div class="kpi-card">⚡ Обработка<br><span class="kpi-number">&lt;1 мин</span></div>
+    </div>
+    <p>✅ Система помогает оперативно реагировать на отзывы, отслеживать тренеров и улучшать качество услуг.</p>
+    <hr>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+        <button onclick="switchPage('feedback')">➕ Оставить отзыв</button>
+        <button onclick="switchPage('dashboard')" style="background:#2c5a6e; color:white;">📈 Смотреть KPI</button>
+    </div>
+</div>
+
+<!-- СТРАНИЦА: ОСТАВИТЬ ОТЗЫВ -->
+<div id="feedback" class="page">
+    <h1>✍️ Оставить отзыв</h1>
+    <form id="feedbackForm">
+        <input type="text" id="clientName" placeholder="Ваше имя" required>
+        <select id="serviceType" required>
+            <option value="">Выберите услугу</option>
+            <option>Тренажерный зал</option>
+            <option>Групповые занятия</option>
+            <option>Бассейн</option>
+            <option>Персональный тренинг</option>
+        </select>
+        <select id="trainerSelect" required>
+            <option value="">Выберите тренера</option>
+            <option>Иванова А.А.</option>
+            <option>Петров С.В.</option>
+            <option>Смирнов Д.И.</option>
+            <option>Кузнецова Е.В.</option>
+        </select>
+        <div>Оценка: <span id="starLabel">★★★★☆</span>
+            <input type="range" id="ratingRange" min="1" max="5" value="4" step="1" style="width: 200px; display: inline-block; margin-left: 10px;">
+        </div>
+        <textarea rows="3" id="commentText" placeholder="Ваш комментарий..."></textarea>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" id="attachPhotoBtn" style="background:#e2e8f0;">📎 Прикрепить фото (симуляция)</button>
+            <button type="submit">Отправить отзыв</button>
+        </div>
+    </form>
+    <div id="feedbackMsg" class="message-banner" style="display:none;"></div>
+    <p style="margin-top: 1rem; font-size:0.85rem;">* Отзыв пройдет модерацию и появится в разделе "Мои отзывы"</p>
+</div>
+
+<!-- СТРАНИЦА: МОИ ОТЗЫВЫ (динамическое хранилище) -->
+<div id="myreviews" class="page">
+    <h1>📋 Мои отзывы</h1>
+    <div id="reviewsListContainer">
+        <p style="color:#6c757d;">Загрузка ваших отзывов...</p>
+    </div>
+    <button onclick="switchPage('feedback')" style="margin-top: 1rem;">➕ Написать новый отзыв</button>
+</div>
+
+<!-- ДАШБОРД (KPI + топ-тренеры) -->
+<div id="dashboard" class="page">
+    <h1>📊 Панель управления</h1>
+    <div class="card-grid">
+        <div class="kpi-card">⭐ Средний рейтинг<br><span class="kpi-number" id="avgRatingDisplay">4.8</span> ★</div>
+        <div class="kpi-card">📈 NPS<br><span class="kpi-number" id="npsDisplay">72</span></div>
+        <div class="kpi-card">📬 Отзывов всего<br><span class="kpi-number" id="totalReviewsDisplay">0</span></div>
+    </div>
+    <h2>🏅 Топ-тренеры по рейтингу</h2>
+    <table id="topTrainersTable">
+        <thead>
+            <tr><th>Тренер</th><th>Средний рейтинг</th><th>Услуга</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Иванова А.А.</td><td>4.9 ★</td><td>Групповые занятия</td></tr>
+            <tr><td>Петров С.В.</td><td>4.7 ★</td><td>Тренажерный зал</td></tr>
+        </tbody>
+    </table>
+    <button id="refreshDashboardBtn" style="background:#2c5a6e; color:white;">Обновить статистику</button>
+</div>
+
+<!-- МОДЕРАЦИЯ ОТЗЫВОВ (только для менеджера) -->
+<div id="moderation" class="page">
+    <h1>🛡️ Модерация отзывов</h1>
+    <p>Отзывы ожидающие проверки:</p>
+    <div id="pendingModerationList"></div>
+    <div id="moderationMessage" style="margin-top:10px;"></div>
+    <hr>
+    <h3>Опубликованные отзывы</h3>
+    <div id="publishedReviewsList"></div>
+</div>
+
+<!-- ОТЧЕТЫ + АНАЛИТИКА -->
+<div id="reports" class="page">
+    <h1>📑 Отчеты и аналитика</h1>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem;">
+        <select id="reportPeriod">
+            <option value="month">Последний месяц</option>
+            <option value="quarter">Последний квартал</option>
+        </select>
+        <button id="generateReportBtn">Сформировать отчет</button>
+    </div>
+    <div id="reportDynamicContent">
+        <div class="kpi-card" style="background:#fef3e8;">📊 Средний рейтинг по услугам<br><span id="reportAvgService">—</span></div>
+        <div class="kpi-card">💬 NPS за период<br><span id="reportNPS">—</span></div>
+        <h3 style="margin-top:1rem;">Детализация</h3>
+        <table id="reportDetailTable"><tr><td colspan="2">Загрузите отчет</td></tr></table>
+    </div>
+</div>
+
+<!-- СТРАНИЦА ВХОДА / АВТОРИЗАЦИИ (демо-доступ) -->
+<div id="login" class="page">
+    <h1>🔐 Вход в систему</h1>
+    <form id="loginFormModal">
+        <input type="text" id="loginUsername" placeholder="Логин" value="manager" autocomplete="off">
+        <input type="password" id="loginPassword" placeholder="Пароль" value="12345">
+        <button type="submit">Войти</button>
+        <p style="font-size:0.8rem; margin-top:0;">Демо: manager / 12345 (доступ к модерации и дашборду)</p>
+        <p style="font-size:0.8rem;">Клиент: любой логин (просмотр отзывов)</p>
+    </form>
+    <div id="loginStatus"></div>
+    <button id="logoutBtn" style="background:#aaa; margin-top:1rem; display:none;">Выйти из аккаунта</button>
+</div>
+
+<footer>
+    СпортФидбек — автоматизация обратной связи для спортклубов. Данные хранятся локально (демо-режим)
+</footer>
+
+<script>
+    // --- КЛЮЧЕВЫЕ СТРУКТУРЫ ДАННЫХ ---
+    let feedbacks = [];          // массив объектов отзывов
+    let currentUser = { login: "guest", role: "client" };  // role: client, manager
+
+    // Предзаполним демо-данными (несколько опубликованных отзывов)
+    function initDemoData() {
+        if(feedbacks.length === 0) {
+            feedbacks.push({
+                id: Date.now()+1,
+                name: "Анна",
+                service: "Тренажерный зал",
+                trainer: "Петров С.В.",
+                rating: 5,
+                comment: "Отличный зал, чисто и современно!",
+                status: "published",
+                reply: "Спасибо, Анна! Ждем вас снова",
+                date: new Date(2026,4,10).toLocaleDateString()
+            });
+            feedbacks.push({
+                id: Date.now()+2,
+                name: "Максим",
+                service: "Групповые занятия",
+                trainer: "Иванова А.А.",
+                rating: 5,
+                comment: "Очень энергичная тренировка!",
+                status: "published",
+                reply: "Рады стараться!",
+                date: new Date(2026,4,8).toLocaleDateString()
+            });
+            feedbacks.push({
+                id: Date.now()+3,
+                name: "Елена",
+                service: "Бассейн",
+                trainer: "—",
+                rating: 4,
+                comment: "Вода теплая, но раздевалка тесновата",
+                status: "pending",
+                reply: "",
+                date: new Date().toLocaleDateString()
+            });
+            feedbacks.push({
+                id: Date.now()+4,
+                name: "Олег",
+                service: "Тренажерный зал",
+                trainer: "Петров С.В.",
+                rating: 3,
+                comment: "Нет питьевой воды",
+                status: "pending",
+                reply: "",
+                date: new Date().toLocaleDateString()
+            });
+        }
+    }
+
+    // Сохраняем отзывы в localStorage
+    function saveFeedbacks() {
+        localStorage.setItem("sportFeedbacks", JSON.stringify(feedbacks));
+    }
+    function loadFeedbacks() {
+        const stored = localStorage.getItem("sportFeedbacks");
+        if(stored) {
+            feedbacks = JSON.parse(stored);
+        } else {
+            initDemoData();
+            saveFeedbacks();
+        }
+    }
+
+    // Функция обновления дашборда и всех динамических компонентов
+    function refreshAllData() {
+        updateDashboardStats();
+        renderMyReviews();
+        renderModerationTables();
+        updateReportPlaceholder();
+    }
+
+    // Статистика для дашборда (средний рейтинг опубликованных, NPS упрощенный)
+    function updateDashboardStats() {
+        const published = feedbacks.filter(f => f.status === "published");
+        const total = published.length;
+        let sumRating = 0;
+        published.forEach(f => sumRating += f.rating);
+        const avg = total ? (sumRating / total).toFixed(1) : "4.5";
+        document.getElementById("avgRatingDisplay").innerText = avg;
+        document.getElementById("totalReviewsDisplay").innerText = total;
+        // Упрощенный NPS: % промоутеров (оценка 4-5) - % критиков (1-2)
+        let promoters = published.filter(f => f.rating >= 4).length;
+        let detractors = published.filter(f => f.rating <= 2).length;
+        let nps = total ? Math.round(((promoters - detractors) / total) * 100) : 70;
+        if(nps < -100) nps = -100;
+        document.getElementById("npsDisplay").innerText = nps;
+        // Топ-тренеры (по опубликованным)
+        const trainerStats = new Map();
+        published.forEach(f => {
+            if(f.trainer && f.trainer !== "—") {
+                if(!trainerStats.has(f.trainer)) trainerStats.set(f.trainer, {sum:0, count:0});
+                let stat = trainerStats.get(f.trainer);
+                stat.sum += f.rating;
+                stat.count++;
+            }
+        });
+        let topTrainers = Array.from(trainerStats.entries()).map(([name, data]) => ({name, avg: data.sum/data.count}));
+        topTrainers.sort((a,b)=>b.avg - a.avg);
+        const tableBody = document.querySelector("#topTrainersTable tbody");
+        if(tableBody) {
+            tableBody.innerHTML = "";
+            if(topTrainers.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='3'>Нет данных по тренерам</td></tr>";
+            } else {
+                topTrainers.slice(0,3).forEach(t => {
+                    let row = `<tr><td>${t.name}</td><td>${t.avg.toFixed(1)} ★</td><td>—</td></tr>`;
+                    tableBody.innerHTML += row;
+                });
+            }
+        }
+        // дополнительно обновим NPS в отчетах
+        const npsForReport = document.getElementById("reportNPS");
+        if(npsForReport) npsForReport.innerText = nps;
+    }
+
+    // отображение "Мои отзывы" - показываем все отзывы с именем currentUser (если клиент) или все если менеджер
+    function renderMyReviews() {
+        let userReviews = [];
+        if(currentUser.role === "manager") {
+            userReviews = feedbacks.filter(f => f.status === "published");
+        } else {
+            // для демо-клиента показываем по имени "Анна" и тд, но проще: если имя в localStorage или используется последний отзыв
+            const clientName = localStorage.getItem("demoClientName") || "Гость";
+            if(clientName !== "Гость") userReviews = feedbacks.filter(f => f.name === clientName);
+            else userReviews = feedbacks.filter(f => f.name === "Анна" || f.name === "Максим"); // пример
+        }
+        const container = document.getElementById("reviewsListContainer");
+        if(!container) return;
+        if(userReviews.length === 0) {
+            container.innerHTML = "<p>У вас пока нет отзывов. Оставьте первый!</p>";
+            return;
+        }
+        let html = "";
+        userReviews.forEach(rev => {
+            html += `<div style="background:#f9f9f9; border-radius:24px; padding: 1rem; margin-bottom:1rem;">
+                        <strong>${rev.name}</strong> | ${rev.service} | ${rev.trainer} <br>
+                        <span class="rating-stars">${"★".repeat(rev.rating)}${"☆".repeat(5-rev.rating)}</span><br>
+                        <em>${rev.comment}</em><br>
+                        <small>📅 ${rev.date} | Статус: ${rev.status === "published" ? "✅ Опубликован" : "⏳ На модерации"}</small><br>
+                        ${rev.reply ? `<div style="background:#eef2fa; padding:8px; border-radius:20px; margin-top:6px;">🗣 Ответ менеджера: ${rev.reply}</div>` : ""}
+                      </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // Модерация: отображаем ожидающие отзывы
+    function renderModerationTables() {
+        const pendingContainer = document.getElementById("pendingModerationList");
+        const publishedContainer = document.getElementById("publishedReviewsList");
+        if(!pendingContainer) return;
+        const pending = feedbacks.filter(f => f.status === "pending");
+        const published = feedbacks.filter(f => f.status === "published");
+        if(pending.length === 0) pendingContainer.innerHTML = "<p>✅ Нет отзывов на модерации</p>";
+        else {
+            let html = `<div style="display:flex; flex-direction:column; gap:12px;">`;
+            pending.forEach(f => {
+                html += `<div style="border:1px solid #ffe0b5; background:#fff6ea; border-radius:24px; padding:1rem;">
+                            <b>${f.name}</b> | ${f.service} | ${f.trainer} | Оценка: ${"★".repeat(f.rating)}<br>
+                            "${f.comment}"<br>
+                            <button class="approveBtn" data-id="${f.id}">✅ Опубликовать</button>
+                            <button class="rejectBtn" data-id="${f.id}">❌ Отклонить</button>
+                         </div>`;
+            });
+            html += `</div>`;
+            pendingContainer.innerHTML = html;
+            document.querySelectorAll(".approveBtn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const id = parseInt(btn.getAttribute("data-id"));
+                    const rev = feedbacks.find(f => f.id === id);
+                    if(rev) { rev.status = "published"; rev.reply = "Одобрено модератором"; saveFeedbacks(); refreshAllData(); renderModerationTables();}
+                });
+            });
+            document.querySelectorAll(".rejectBtn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const id = parseInt(btn.getAttribute("data-id"));
+                    feedbacks = feedbacks.filter(f => f.id !== id);
+                    saveFeedbacks(); refreshAllData(); renderModerationTables();
+                });
+            });
+        }
+        if(published.length === 0) publishedContainer.innerHTML = "<p>Нет опубликованных отзывов</p>";
+        else {
+            let pubHtml = `<table><tr><th>Клиент</th><th>Отзыв</th><th>Рейтинг</th><th>Ответ</th></tr>`;
+            published.slice(0,6).forEach(f => {
+                pubHtml += `<tr><td>${f.name}</td><td>${f.comment.substring(0,40)}</td><td>${f.rating}★</td><td>${f.reply || "—"}</td></tr>`;
+            });
+            pubHtml += `</table>`;
+            publishedContainer.innerHTML = pubHtml;
+        }
+    }
+
+    function updateReportPlaceholder() {
+        const published = feedbacks.filter(f => f.status === "published");
+        let avgService = {};
+        published.forEach(f => {
+            if(!avgService[f.service]) avgService[f.service] = {sum:0,count:0};
+            avgService[f.service].sum += f.rating;
+            avgService[f.service].count++;
+        });
+        let avgText = Object.entries(avgService).map(([s,val]) => `${s}: ${(val.sum/val.count).toFixed(1)}★`).join(', ');
+        document.getElementById("reportAvgService").innerText = avgText || "—";
+        const totalPub = published.length;
+        let promoters = published.filter(f=> f.rating>=4).length;
+        let detractors = published.filter(f=> f.rating<=2).length;
+        let npsVal = totalPub ? Math.round(((promoters - detractors)/totalPub)*100) : 72;
+        document.getElementById("reportNPS").innerText = npsVal;
+        let detailHtml = `<tr><th>Услуга</th><th>Средний рейтинг</th></tr>`;
+        for(let [serv,data] of Object.entries(avgService)) {
+            detailHtml += `<tr><td>${serv}</td><td>${(data.sum/data.count).toFixed(1)} ★</td></tr>`;
+        }
+        document.getElementById("reportDetailTable").innerHTML = detailHtml;
+    }
+
+    // Отправка нового отзыва
+    document.getElementById("feedbackForm")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("clientName").value.trim();
+        if(!name) { alert("Введите имя"); return; }
+        const service = document.getElementById("serviceType").value;
+        const trainer = document.getElementById("trainerSelect").value;
+        const rating = parseInt(document.getElementById("ratingRange").value);
+        const comment = document.getElementById("commentText").value;
+        const newId = Date.now();
+        const newFeedback = {
+            id: newId,
+            name: name,
+            service: service,
+            trainer: trainer,
+            rating: rating,
+            comment: comment,
+            status: "pending",
+            reply: "",
+            date: new Date().toLocaleDateString()
+        };
+        feedbacks.push(newFeedback);
+        saveFeedbacks();
+        localStorage.setItem("demoClientName", name);
+        document.getElementById("feedbackMsg").style.display = "block";
+        document.getElementById("feedbackMsg").innerHTML = "✅ Отзыв отправлен на модерацию! Спасибо.";
+        setTimeout(()=>{ document.getElementById("feedbackMsg").style.display = "none"; }, 3000);
+        document.getElementById("feedbackForm").reset();
+        refreshAllData();
+        // обновляем звезды визуально
+    });
+    const ratingSlider = document.getElementById("ratingRange");
+    const starLabel = document.getElementById("starLabel");
+    if(ratingSlider){
+        ratingSlider.addEventListener("input",()=>{
+            let val = ratingSlider.value;
+            starLabel.innerText = "★".repeat(val) + "☆".repeat(5-val);
+        });
+    }
+    document.getElementById("attachPhotoBtn")?.addEventListener("click",()=>{
+        alert("⚡ Функция загрузки фото (симуляция). В реальной системе файл прикрепится.");
+    });
+    document.getElementById("refreshDashboardBtn")?.addEventListener("click",()=>{
+        refreshAllData();
+    });
+    document.getElementById("generateReportBtn")?.addEventListener("click",()=>{
+        updateReportPlaceholder();
+        alert("Отчет обновлен на основе актуальных отзывов");
+    });
+
+    // Логин менеджера
+    const loginForm = document.getElementById("loginFormModal");
+    if(loginForm){
+        loginForm.addEventListener("submit",(e)=>{
+            e.preventDefault();
+            const login = document.getElementById("loginUsername").value;
+            const pass = document.getElementById("loginPassword").value;
+            if(login === "manager" && pass === "12345"){
+                currentUser = { login: "manager", role: "manager" };
+                document.getElementById("loginStatus").innerHTML = "<span style='color:green;'>✔️ Вы вошли как менеджер. Доступна модерация и дашборд.</span>";
+                document.getElementById("logoutBtn").style.display = "inline-block";
+                refreshAllData();
+                switchPage("dashboard");
+            } else {
+                currentUser = { login: login || "client", role: "client" };
+                document.getElementById("loginStatus").innerHTML = "<span style='color:#2c5e6e;'>👤 Вход как клиент. Вы можете оставлять отзывы.</span>";
+                document.getElementById("logoutBtn").style.display = "inline-block";
+                refreshAllData();
+                switchPage("home");
+            }
+        });
+    }
+    document.getElementById("logoutBtn")?.addEventListener("click",()=>{
+        currentUser = { login: "guest", role: "client" };
+        document.getElementById("logoutBtn").style.display = "none";
+        document.getElementById("loginStatus").innerHTML = "";
+        alert("Вы вышли из системы");
+        switchPage("home");
+    });
+
+    function switchPage(pageId) {
+        document.querySelectorAll(".page").forEach(p => p.classList.remove("active-page"));
+        const active = document.getElementById(pageId);
+        if(active) active.classList.add("active-page");
+        if(pageId === "myreviews") renderMyReviews();
+        if(pageId === "moderation") { if(currentUser.role !== "manager") alert("Доступ только для менеджера. Войдите с manager/12345"); else renderModerationTables(); }
+        if(pageId === "dashboard") updateDashboardStats();
+        if(pageId === "reports") updateReportPlaceholder();
+        window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    document.querySelectorAll(".nav-links a").forEach(link => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const page = link.getAttribute("data-page");
+            if(page) switchPage(page);
+        });
+    });
+    window.switchPage = switchPage;
+    loadFeedbacks();
+    refreshAllData();
+    updateReportPlaceholder();
+    // стартовый рендер
+    renderMyReviews();
+</script>
+</body>
+</html>
